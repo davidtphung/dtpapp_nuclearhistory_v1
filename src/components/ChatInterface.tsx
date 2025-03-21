@@ -2,6 +2,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Mic, MicOff, Volume2, VolumeX, BookOpen } from 'lucide-react';
 import { getNuclearHistory } from '../services/openaiService';
+import { useReadingLevel } from '../context/ReadingLevelContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: string;
@@ -20,6 +22,7 @@ const ReadingLevelLabels: Record<ReadingLevel, string> = {
 };
 
 const ChatInterface: React.FC = () => {
+  const { readingLevel, setReadingLevel } = useReadingLevel();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -32,8 +35,11 @@ const ChatInterface: React.FC = () => {
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
   const [isVoiceInputActive, setIsVoiceInputActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [readingLevel, setReadingLevel] = useState<ReadingLevel>('novice');
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const speechSynthesisRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const recognitionRef = useRef<any>(null);
+  const { toast } = useToast();
   
   // Sample questions to help users
   const sampleQuestions = [
@@ -43,6 +49,53 @@ const ChatInterface: React.FC = () => {
     "What happened at Three Mile Island?",
     "Who were the key scientists in nuclear development?"
   ];
+
+  // Initialize speech recognition
+  useEffect(() => {
+    // Check if browser supports SpeechRecognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = true;
+      recognitionRef.current.interimResults = true;
+      
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = Array.from(event.results)
+          .map((result: any) => result[0])
+          .map((result: any) => result.transcript)
+          .join('');
+        
+        setInputValue(transcript);
+      };
+      
+      recognitionRef.current.onerror = (event: any) => {
+        console.error('Speech recognition error', event.error);
+        setIsVoiceInputActive(false);
+        toast({
+          title: "Voice Input Error",
+          description: `Failed to recognize speech: ${event.error}`,
+          variant: "destructive"
+        });
+      };
+    } else {
+      toast({
+        title: "Feature Not Supported",
+        description: "Your browser doesn't support speech recognition",
+        variant: "destructive"
+      });
+    }
+    
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      
+      if (speechSynthesis && speechSynthesisRef.current) {
+        speechSynthesis.cancel();
+      }
+    };
+  }, [toast]);
 
   useEffect(() => {
     scrollToBottom();
@@ -78,10 +131,9 @@ const ChatInterface: React.FC = () => {
       };
       setMessages(prevMessages => [...prevMessages, responseMessage]);
       
-      // If voice is enabled, would use text-to-speech here
+      // If voice is enabled, use text-to-speech
       if (isVoiceEnabled) {
-        // Text-to-speech would be implemented here
-        console.log('Voice response would play for:', responseMessage.text);
+        speakText(response);
       }
     } catch (error) {
       console.error('Error getting response:', error);
@@ -98,6 +150,50 @@ const ChatInterface: React.FC = () => {
     }
   };
 
+  // Function to speak text using the Web Speech API
+  const speakText = (text: string) => {
+    if (!speechSynthesis) {
+      toast({
+        title: "Feature Not Supported",
+        description: "Your browser doesn't support text-to-speech",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Stop any ongoing speech
+    if (speechSynthesisRef.current && speechSynthesis.speaking) {
+      speechSynthesis.cancel();
+    }
+    
+    // Create a new utterance
+    const utterance = new SpeechSynthesisUtterance(text);
+    speechSynthesisRef.current = utterance;
+    
+    // Set voice preferences (optional)
+    const voices = speechSynthesis.getVoices();
+    const preferredVoice = voices.find(voice => voice.lang === 'en-US');
+    if (preferredVoice) {
+      utterance.voice = preferredVoice;
+    }
+    
+    // Set events
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = (event) => {
+      console.error('Speech synthesis error', event);
+      setIsSpeaking(false);
+      toast({
+        title: "Speech Error",
+        description: "Failed to play audio narration",
+        variant: "destructive"
+      });
+    };
+    
+    // Start speaking
+    speechSynthesis.speak(utterance);
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -106,16 +202,61 @@ const ChatInterface: React.FC = () => {
   };
 
   const toggleVoiceOutput = () => {
+    // If currently speaking, stop speech
+    if (isSpeaking && speechSynthesis) {
+      speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+    
     setIsVoiceEnabled(!isVoiceEnabled);
+    toast({
+      title: isVoiceEnabled ? "Voice Output Disabled" : "Voice Output Enabled",
+      description: isVoiceEnabled ? "Responses will not be read aloud" : "Responses will be read aloud",
+    });
   };
 
   const toggleVoiceInput = () => {
-    setIsVoiceInputActive(!isVoiceInputActive);
-    // Voice recognition would be implemented here
+    if (!recognitionRef.current) {
+      toast({
+        title: "Feature Not Supported",
+        description: "Your browser doesn't support speech recognition",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsVoiceInputActive(prev => !prev);
+    
     if (!isVoiceInputActive) {
-      console.log('Voice input would start');
+      try {
+        recognitionRef.current.start();
+        toast({
+          title: "Voice Input Activated",
+          description: "Speak now to input your question",
+        });
+      } catch (error) {
+        console.error('Error starting speech recognition:', error);
+        toast({
+          title: "Voice Input Error",
+          description: "Failed to start speech recognition",
+          variant: "destructive"
+        });
+      }
     } else {
-      console.log('Voice input would stop');
+      try {
+        recognitionRef.current.stop();
+        toast({
+          title: "Voice Input Deactivated",
+          description: "Voice input has been turned off",
+        });
+        
+        // If we have a valid input, send the message automatically
+        if (inputValue.trim().length > 5) {
+          handleSend();
+        }
+      } catch (error) {
+        console.error('Error stopping speech recognition:', error);
+      }
     }
   };
 
@@ -154,6 +295,24 @@ const ChatInterface: React.FC = () => {
       
       <div className="glass-panel p-4 md:p-6 max-w-4xl mx-auto">
         <div className="flex flex-col h-[500px]">
+          {/* Voice Status Indicator */}
+          {(isVoiceInputActive || isSpeaking) && (
+            <div className="bg-primary/10 text-primary text-sm p-2 rounded-md mb-2 flex items-center justify-center">
+              {isVoiceInputActive && (
+                <div className="flex items-center mr-3">
+                  <Mic size={16} className="mr-1 animate-pulse" />
+                  <span>Listening...</span>
+                </div>
+              )}
+              {isSpeaking && (
+                <div className="flex items-center">
+                  <Volume2 size={16} className="mr-1 animate-pulse" />
+                  <span>Speaking...</span>
+                </div>
+              )}
+            </div>
+          )}
+          
           {/* Chat Messages */}
           <div className="flex-1 overflow-y-auto p-4">
             <div className="space-y-4">
@@ -215,7 +374,7 @@ const ChatInterface: React.FC = () => {
                 className={`icon-button ${isVoiceInputActive ? 'text-primary' : ''}`}
                 aria-label={isVoiceInputActive ? 'Stop voice input' : 'Start voice input'}
               >
-                {isVoiceInputActive ? <Mic size={18} /> : <MicOff size={18} />}
+                {isVoiceInputActive ? <Mic size={18} className="animate-pulse" /> : <MicOff size={18} />}
               </button>
               
               <div className="flex-1 relative">
