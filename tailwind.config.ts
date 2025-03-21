@@ -53,11 +53,6 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        timeline: {
-          line: "hsl(var(--timeline-line))",
-          dot: "hsl(var(--timeline-dot))",
-          dotActive: "hsl(var(--timeline-dot-active))",
-        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -82,6 +77,11 @@ const config = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "pulse-glow": "pulse-glow 2s infinite",
+      },
+      backgroundColor: {
+        'timeline-line': 'hsl(var(--timeline-line))',
+        'timeline-dot': 'hsl(var(--timeline-dot))',
+        'timeline-dot-active': 'hsl(var(--timeline-dot-active))',
       },
     },
   },
