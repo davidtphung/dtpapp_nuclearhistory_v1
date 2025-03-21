@@ -1,12 +1,15 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, GraduationCap, Book, Brain, Baby } from 'lucide-react';
 import { timelineEvents } from '../utils/timelineData';
 import TimelineEvent from './TimelineEvent';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Timeline: React.FC = () => {
   const [activeEventIndex, setActiveEventIndex] = useState(0);
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 5 });
+  const [readingLevel, setReadingLevel] = useState<'kids' | 'novice' | 'college' | 'expert'>('novice');
   const timelineRef = useRef<HTMLDivElement>(null);
   
   const activeEvent = timelineEvents[activeEventIndex];
@@ -59,6 +62,35 @@ const Timeline: React.FC = () => {
         <p className="text-muted-foreground max-w-2xl mx-auto">
           Discover key moments in the history of nuclear fission and energy development in the United States.
         </p>
+        
+        {/* Reading Level Selector */}
+        <div className="mt-6 flex justify-center">
+          <Tabs 
+            defaultValue="novice" 
+            className="w-full max-w-md"
+            value={readingLevel}
+            onValueChange={(value) => setReadingLevel(value as 'kids' | 'novice' | 'college' | 'expert')}
+          >
+            <TabsList className="grid grid-cols-4 w-full">
+              <TabsTrigger value="kids" className="flex items-center gap-1">
+                <Baby className="h-4 w-4" />
+                <span className="hidden sm:inline">Kids</span>
+              </TabsTrigger>
+              <TabsTrigger value="novice" className="flex items-center gap-1">
+                <Book className="h-4 w-4" />
+                <span className="hidden sm:inline">Novice</span>
+              </TabsTrigger>
+              <TabsTrigger value="college" className="flex items-center gap-1">
+                <Brain className="h-4 w-4" />
+                <span className="hidden sm:inline">College</span>
+              </TabsTrigger>
+              <TabsTrigger value="expert" className="flex items-center gap-1">
+                <GraduationCap className="h-4 w-4" />
+                <span className="hidden sm:inline">Expert</span>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
       </div>
       
       <div className="relative glass-panel p-6 md:p-8">
@@ -111,7 +143,7 @@ const Timeline: React.FC = () => {
         {/* Event Details */}
         <div className="mt-12">
           {activeEvent && (
-            <TimelineEvent event={activeEvent} />
+            <TimelineEvent event={activeEvent} readingLevel={readingLevel} />
           )}
         </div>
       </div>

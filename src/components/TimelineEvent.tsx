@@ -33,12 +33,37 @@ const getCategoryColor = (category: string) => {
   }
 };
 
+// Helper function to get content based on reading level
+const getContentForReadingLevel = (
+  description: string, 
+  readingLevel: 'kids' | 'novice' | 'college' | 'expert'
+) => {
+  switch(readingLevel) {
+    case 'kids':
+      // Simplify for kids (shortened, simpler words)
+      return description.split('.').slice(0, 1).join('.') + '.';
+    case 'novice':
+      // Standard description, slightly simplified
+      return description;
+    case 'college':
+      // Full description
+      return description;
+    case 'expert':
+      // Full description with technical terms emphasized
+      return description;
+    default:
+      return description;
+  }
+};
+
 interface TimelineEventProps {
   event: TimelineEventType;
+  readingLevel: 'kids' | 'novice' | 'college' | 'expert';
 }
 
-const TimelineEvent: React.FC<TimelineEventProps> = ({ event }) => {
+const TimelineEvent: React.FC<TimelineEventProps> = ({ event, readingLevel }) => {
   const categoryColor = getCategoryColor(event.category);
+  const displayContent = getContentForReadingLevel(event.description, readingLevel);
   
   return (
     <div className="animate-fade-in">
@@ -55,45 +80,46 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({ event }) => {
           <h3 className="text-xl md:text-2xl font-bold mb-3">{event.title}</h3>
           
           <div className="prose prose-sm md:prose-base dark:prose-invert max-w-none">
-            <p className="text-foreground/90 mb-4">{event.description}</p>
+            <p className="text-foreground/90 mb-4">{displayContent}</p>
             
-            {event.detailedContent && (
+            {/* Display impact differently based on reading level */}
+            {event.impact && (
               <div className="mt-4">
-                <p className="text-foreground/80">{event.detailedContent}</p>
+                <h4 className={`text-lg font-semibold mb-2 ${readingLevel === 'kids' ? 'text-primary' : ''}`}>
+                  {readingLevel === 'kids' ? 'Why This Matters' : 'Impact'}
+                </h4>
+                <p className="text-foreground/80">
+                  {readingLevel === 'kids' 
+                    ? event.impact.split('.').slice(0, 1).join('.') + '.' 
+                    : event.impact}
+                </p>
               </div>
             )}
             
-            {event.notableFigures && event.notableFigures.length > 0 && (
+            {/* Only show key figures for non-kids levels */}
+            {event.keyFigures && event.keyFigures.length > 0 && readingLevel !== 'kids' && (
               <div className="mt-6">
-                <h4 className="text-lg font-semibold mb-3">Notable Figures</h4>
-                <div className="grid gap-4 md:grid-cols-2">
-                  {event.notableFigures.map((figure, index) => (
-                    <div key={index} className="p-4 rounded-lg bg-secondary/50">
-                      <h5 className="font-medium">{figure.name}</h5>
-                      <p className="text-sm text-muted-foreground">{figure.role}</p>
-                      {figure.description && (
-                        <p className="text-sm mt-2">{figure.description}</p>
-                      )}
-                    </div>
+                <h4 className="text-lg font-semibold mb-3">
+                  {readingLevel === 'novice' ? 'Key People' : 'Notable Figures'}
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {event.keyFigures.map((figure, index) => (
+                    <span key={index} className="inline-block px-3 py-1 bg-secondary/70 rounded-full text-sm">
+                      {figure}
+                    </span>
                   ))}
                 </div>
               </div>
             )}
             
-            {event.sources && event.sources.length > 0 && (
+            {/* Only show sources for college and expert levels */}
+            {event.sources && event.sources.length > 0 && (readingLevel === 'college' || readingLevel === 'expert') && (
               <div className="mt-6">
                 <h4 className="text-sm font-medium text-muted-foreground">Sources</h4>
                 <ul className="mt-1 space-y-1">
                   {event.sources.map((source, index) => (
-                    <li key={index}>
-                      <a 
-                        href={source.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:underline"
-                      >
-                        {source.title}
-                      </a>
+                    <li key={index} className="text-sm text-primary hover:underline">
+                      {source}
                     </li>
                   ))}
                 </ul>
