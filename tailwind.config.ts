@@ -67,7 +67,7 @@ export default {
 				timeline: {
 					line: 'hsl(var(--timeline-line))',
 					dot: 'hsl(var(--timeline-dot))',
-					dotActive: 'hsl(var(--timeline-dot-active))',
+					'dot-active': 'hsl(var(--timeline-dot-active))',
 				},
 				nuclear: {
 					blue: '#0A84FF',
@@ -76,6 +76,11 @@ export default {
 					green: '#30D158',
 					red: '#FF453A',
 				},
+			},
+			backgroundColor: {
+				'timeline-dot': 'hsl(var(--timeline-dot))',
+				'timeline-dot-active': 'hsl(var(--timeline-dot-active))',
+				'timeline-line': 'hsl(var(--timeline-line))',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
