@@ -3,7 +3,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, GraduationCap, Book, Brain, Baby } from 'lucide-react';
 import { timelineEvents } from '../utils/timelineData';
 import TimelineEvent from './TimelineEvent';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Timeline: React.FC = () => {

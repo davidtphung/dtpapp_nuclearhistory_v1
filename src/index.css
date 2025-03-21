@@ -1,98 +1,90 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-
+    --card-foreground: 222.2 84% 4.9%;
+ 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-
-    --primary: 210 100% 52%;
+    --popover-foreground: 222.2 84% 4.9%;
+ 
+    --primary: 222.1 83.2% 9.8%;
     --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-
-    --accent: 210 40% 96%;
-    --accent-foreground: 222 47% 11%;
-
-    --destructive: 0 85% 60%;
+ 
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+ 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+ 
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+ 
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 222 84% 5%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+ 
+    --ring: 222.1 83.2% 9.8%;
+ 
+    --radius: 0.5rem;
 
-    --radius: 1rem;
-
-    --timeline-line: 210 100% 52% / 0.4;
-    --timeline-dot: 210 100% 52%;
-    --timeline-dot-active: 210 100% 52%;
+    --timeline-line: 210 40% 88%;
+    --timeline-dot: 210 40% 75%;
+    --timeline-dot-active: 222.1 83.2% 9.8%;
   }
-
+ 
   .dark {
-    --background: 222 47% 11%;
+    --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
-    --card: 222 47% 11%;
+ 
+    --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
-    --popover: 222 47% 11%;
+ 
+    --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
-    --primary: 210 100% 52%;
-    --primary-foreground: 222 47% 11%;
-
-    --secondary: 217 33% 18%;
+ 
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.1 83.2% 9.8%;
+ 
+    --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
-    --muted: 217 33% 18%;
-    --muted-foreground: 215 20% 65%;
-
-    --accent: 217 33% 18%;
+ 
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.9%;
+ 
+    --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 63% 31%;
+ 
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
+ 
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+ 
+    --ring: 210 40% 98%;
 
-    --border: 217 33% 25%;
-    --input: 217 33% 25%;
-    --ring: 213 27% 84%;
-
-    --timeline-line: 210 100% 52% / 0.6;
-    --timeline-dot: 210 100% 52% / 0.8;
-    --timeline-dot-active: 210 100% 52%;
+    --timeline-line: 216 39% 45%;
+    --timeline-dot: 216 33% 30%;
+    --timeline-dot-active: 210 40% 98%;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
-    box-sizing: border-box;
   }
-
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    transition: background-color 0.3s ease;
-  }
-
-  .text-balance {
-    text-wrap: balance;
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
   }
 }
 
@@ -118,7 +110,7 @@
   }
   
   .timeline-dot-active {
-    @apply w-4 h-4 rounded-full bg-timeline-dot-active animate-pulse-glow;
+    @apply w-4 h-4 rounded-full bg-timeline-dotActive animate-pulse-glow;
   }
   
   .timeline-line {
@@ -127,7 +119,18 @@
 }
 
 @layer utilities {
-  .text-shadow {
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out forwards;
+  }
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
